@@ -30,6 +30,14 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
+                    // Check if a container with the same name exists, and remove it
+                    sh '''
+                    if docker ps -a --format '{{.Names}}' | grep -q "^eureka_container$"; then
+                        echo "Removing existing container named eureka_container..."
+                        docker rm -f eureka_container
+                    fi
+                    '''
+
                     // Check if a container is using port 8761, then remove it
                     sh '''
                     existing_container=$(docker ps -q --filter "publish=8761")
