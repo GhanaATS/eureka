@@ -12,6 +12,16 @@ pipeline {
             steps {
                 script {
                     sh 'docker --version'  // Check if Docker is installed
+
+                    // Remove any existing Docker image with the same name
+                    sh '''
+                    if docker images | grep -q "eureka"; then
+                        echo "Removing existing Docker image: eureka"
+                        docker rmi -f eureka
+                    fi
+                    '''
+
+                    // Build the new Docker image
                     sh 'docker build -t eureka .'
                 }
             }
@@ -20,9 +30,20 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    sh 'docker rm -f eureka_container || true'  // Remove any existing container
+                    // Check if a container is using port 8761, then remove it
+                    sh '''
+                    existing_container=$(docker ps -q --filter "publish=8761")
+                    if [ ! -z "$existing_container" ]; then
+                        echo "Stopping and removing existing container using port 8761..."
+                        docker rm -f $existing_container
+                    fi
+                    '''
+
+                    // Run the new container
                     sh 'docker run -d -p 8761:8761 --name eureka_container eureka'
-                    sh 'docker ps -a | grep eureka_container'  // Verify if the container is running
+
+                    // Verify if the container is running
+                    sh 'docker ps -a | grep eureka_container'
                 }
             }
         }
