@@ -11,6 +11,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    sh 'docker --version'  // Check if Docker is installed
                     sh 'docker build -t eureka .'
                 }
             }
@@ -19,11 +20,9 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    // Stop and remove the existing container if it exists
-                    sh '''
-                    docker ps -a | grep eureka_container && docker stop eureka_container && docker rm eureka_container || true
-                    docker run -d -p 8761:8761 --name eureka_container eureka
-                    '''
+                    sh 'docker rm -f eureka_container || true'  // Remove any existing container
+                    sh 'docker run -d -p 8761:8761 --name eureka_container eureka'
+                    sh 'docker ps -a | grep eureka_container'  // Verify if the container is running
                 }
             }
         }
