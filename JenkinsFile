@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                 git 'https://github.com/GhanaATS/eureka.git'
+                git 'https://github.com/GhanaATS/eureka.git'
             }
         }
 
@@ -15,11 +15,11 @@ pipeline {
                 }
             }
         }
-        
-         stage('Build Docker container') {
+
+        stage('Run Docker Container') {
             steps {
                 script {
-                    sh 'docker run -d -p 8761:8761 eureka '
+                    sh 'docker run -d -p 8761:8761 --name eureka_container eureka'
                 }
             }
         }
